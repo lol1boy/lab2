@@ -33,7 +33,7 @@ def divided_diff(x, y):
     #     print(coef[j-1:n])
         # coef[j:n] = (coef[j:n] - coef[j-1:n-1]) / (x[j:n] - x[0:n-j])
     for j in range(1, n):
-        for i in range(n - 1, j - 1, -1):          # right → left
+        for i in range(n - 1, j - 1, -1):
             coef[i] = (coef[i] - coef[i - 1]) / (x[i] - x[i - j])
     return coef
 
@@ -48,6 +48,32 @@ def newton_polynomial(coef, x_data, x_val):
     for k in range(n - 2, -1, -1):
         p = coef[k] + (x_val - x_data[k]) * p
     return p
+
+def print_dd_table(x, coef):
+    n = len(x)
+    
+    table = np.zeros((n, n))
+    table[:, 0] = y
+    
+    temp = np.copy(y).astype(float)
+    for j in range(1, n):
+        for i in range(n - 1, j - 1, -1):
+            temp[i] = (temp[i] - temp[i - 1]) / (x[i] - x[i - j])
+        table[j:, j] = temp[j:]
+    
+    print(f"{'x':>8}", end="")
+    for k in range(n):
+        print(f"  order {k}", end="")
+    print()
+    print("─" * (8 + 10 * n))
+    
+    for i in range(n):
+        print(f"{x[i]:>8.0f}", end="")
+        for j in range(n - i):
+            print(f"  {table[i][j]:>8.5f}", end="")
+        print()
+
+print_dd_table(x, coef)
 
 x_new = 600
 y_new = newton_polynomial(coef, x, x_new)
