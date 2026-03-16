@@ -75,6 +75,59 @@ def print_dd_table(x, coef):
 
 print_dd_table(x, coef)
 
+def finite_differences(y):
+    n = len(y)
+    delta = list(y)
+    coeffs = [delta[0]]
+    for k in range(1, n):
+        delta = [delta[i+1] - delta[i] for i in range(len(delta)-1)]
+        coeffs.append(delta[0])
+    return coeffs
+
+def factorial_poly(x_data, y_data, x_val):
+    n = len(x_data)
+    h = (x_data[-1] - x_data[0]) / (n - 1)
+    t = (x_val - x_data[0]) / h
+
+    coeffs = finite_differences(y_data)
+
+    result = 0.0
+    binom = 1.0
+    factorial = 1.0
+    for k in range(n):
+        result += binom * coeffs[k] / factorial
+        binom *= (t - k)
+        factorial *= (k + 1)
+    return result
+
+print(f"Factorial:  CPU(600) = {factorial_poly(x, y, 600):.4f} %")
+
+
+def run_node_study(x_all, y_all, target=600):
+    print(f"\n{'Nodes':<8} {'Newton':>12} {'Factorial':>12} {'Error N':>12} {'Error F':>12}")
+    print("─" * 58)
+
+    dd_ref = divided_diff(x_all, y_all)
+    ref = newton_polynomial(dd_ref, x_all, target)
+
+    for n_nodes in [3, 4, 5]:
+        indices = np.round(np.linspace(0, len(x_all)-1, n_nodes)).astype(int)
+        xn = x_all[indices]
+        yn = y_all[indices]
+
+        dd = divided_diff(xn, yn)
+        newton_pred   = newton_polynomial(dd, xn, target)
+        factorial_pred = factorial_poly(list(xn), list(yn), target)
+
+        err_n = abs(newton_pred   - ref)
+        err_f = abs(factorial_pred - ref)
+
+        print(f"{n_nodes:<8} {newton_pred:>12.4f} {factorial_pred:>12.4f} "
+              f"{err_n:>12.4f} {err_f:>12.4f}")
+
+run_node_study(x, y)
+
+
 x_new = 600
 y_new = newton_polynomial(coef, x, x_new)
 print(f"\nPrediction:  CPU({x_new} RPS) = {y_new:.4f} %")
